@@ -1,30 +1,19 @@
 import React, {useEffect, useState} from "react";
 import {api} from "./api";
+import {useDispatch, useSelector} from "react-redux";
+import {deleteItemTC, loadItemsTC} from "../store/redux";
 
 export const ItemsPageRedux = () => {
-    const [items, setItems] = useState([])
-    const [status, setStatus] = useState('idle')
-    const [error, setError] = useState<any>(null)
+    const items = useSelector(s => s.data.items)
+    const status = useSelector(s => s.items.status)
+    const error = useSelector(s => s.items.error)
+    const dispatch = useDispatch()
 
     useEffect(() => {
-        setStatus('loading')
-        setError(null)
-        api.loadItems(1).then((res) => {
-            setItems(res.data)
-        }).catch(err => {
-            setError(err)
-        }).finally(() => setStatus('idle'))
+        dispatch(loadItemsTC())
     }, [])
 
-    const deleteItem = (id:any) => {
-        setStatus('loading')
-        setError(null)
-        api.deleteItem(id).then((res) => {
-            setItems(items.filter(i => i.id !== id))
-        }).catch(err => {
-            setError(err)
-        }).finally(() => setStatus('idle'))
-    }
+
 
 
     return (
@@ -34,7 +23,7 @@ export const ItemsPageRedux = () => {
             <ul>{
                 items
                     .map(i => {
-                        return <Item item={i} deleteItem={deleteItem} key={i.id}/>
+                        return <Item item={i} key={i.id}/>
                     })}
             </ul>
         </div>
@@ -42,10 +31,15 @@ export const ItemsPageRedux = () => {
 }
 
 const Item = (props: any) => {
+const dispatch=useDispatch()
+    const deleteItem = () => {
+        dispatch(deleteItemTC(props.item.id))
+    }
+
     return (
         <li>
             {props.item.title}
-            <button onClick={() => props.deleteItem(props.item.id)}>X</button>
+            <button onClick={deleteItem}>X</button>
         </li>
     )
 }

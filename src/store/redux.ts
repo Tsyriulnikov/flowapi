@@ -15,6 +15,8 @@ export const itemsReducer = (state = initialState, action) => {
             return {...state, items: action.items}
         case 'item-deleted':
             return {...state, items: state.items.filter(i => i.id !== action.id)}
+        case 'item-updated':
+            return {...state, items: state.items.map(i => i.id !== action.id ? i : {...i,...action.data})}
         default:
             return state
     }
@@ -28,22 +30,24 @@ export const setErrorAC = (error) => {type:'error-changed',error};
 
 export const loadItemsTC = (categoryId)=>(dispatch)=>{
     dispatch(changeStatusAC('loading'))
+    dispatch(setErrorAC(null))
     api.loadItems(categoryId).then((res) => {
-        dispatch(changeStatusAC('succes'))
+        // dispatch(changeStatusAC('succes'))
         dispatch(itemsLoadedAC(res.data))
     }).catch(err=>{
-        dispatch(changeStatusAC('error'))
+        // dispatch(changeStatusAC('error'))
         dispatch(setErrorAC(err))
-    })
+    }).finally(()=>dispatch(changeStatusAC('idle')))
 }
 
 export const deleteItemTC = (id)=>(dispatch)=>{
     dispatch(changeStatusAC('loading'))
+    dispatch(setErrorAC(null))
     api.deleteItem(id).then((res) => {
         dispatch(changeStatusAC('succes'))
         dispatch(itemDeletedAC(id))
     }).catch(err=>{
         dispatch(changeStatusAC('error'))
         dispatch(setErrorAC(err))
-    })
+    }).finally(()=>dispatch(changeStatusAC('idle')))
 }
